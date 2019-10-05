@@ -59,8 +59,9 @@ public class mecanumDrive extends OpMode
     private DcMotor rightBack = null;
     private DcMotor leftFront = null;
     private DcMotor rightFront = null;
-    private DcMotor intake = null;
-    private DcMotor pulley = null;
+    /*private DcMotor intakeOne = null;
+    private DcMotor intakeTwo = null;
+    private DcMotor pulley = null;*/
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -76,8 +77,9 @@ public class mecanumDrive extends OpMode
         rightBack = hardwareMap.get(DcMotor.class, "right_Back"); // Green, Blue
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
-        intake = hardwareMap.get(DcMotor.class, "Conveyor belt");
-        pulley = hardwareMap.get (DcMotor.class, "Lift");
+        /*intakeOne = hardwareMap.get(DcMotor.class, "intake_One");
+        intakeTwo = hardwareMap.get(DcMotor.class, "intake_Two");
+        pulley = hardwareMap.get (DcMotor.class, "Lift");*/
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -85,8 +87,9 @@ public class mecanumDrive extends OpMode
         rightBack.setDirection(DcMotor.Direction.REVERSE);
         leftFront.setDirection(DcMotor.Direction.FORWARD);
         rightFront.setDirection(DcMotor.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.FORWARD);
-        pulley.setDirection (DcMotor.Direction.FORWARD);
+        /*intakeOne.setDirection(DcMotor.Direction.FORWARD);
+        intakeTwo.setDirection(DcMotor.Direction.FORWARD);
+        pulley.setDirection (DcMotor.Direction.FORWARD);*/
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -139,8 +142,8 @@ public class mecanumDrive extends OpMode
        {
            leftBack.setPower(turnPower);
            rightBack.setPower(-turnPower);
-           leftFront.setPower(-turnPower);
-           rightFront.setPower(turnPower);
+           leftFront.setPower(turnPower);
+           rightFront.setPower(-turnPower);
        }
        else{
            // degrees is proportional to power / powerScale
@@ -211,7 +214,7 @@ public class mecanumDrive extends OpMode
         forwardPower = Range.clip(forwardBackward, -1.0,1.0);
         sidePower = Range.clip(sideWays, -1.0, 1.0);
         turnPower = Range.clip(turn, -1.0, 1.0);
-        //liftpower = Range.clip(liftMechanism, -1.0, 1.0);
+        liftpower = Range.clip(liftMechanism, -1.0, 1.0);
 
         // Tank Mode uses one stick to control each wheel.
         // - This requires no math, but it is hard to drive forward slowly and keep straight.
@@ -219,10 +222,12 @@ public class mecanumDrive extends OpMode
         // rightPower = -gamepad1.right_stick_y ;
         /*if (gamepad2.right_bumper == true)
         {
-            intake.setPower(.3);
+            intakeOne.setPower(0.3);
+            intakeTwo.setPower(0.3);
         }
         pulley.setPower(liftpower);
-        intake.setPower(0);*/
+        intakeOne.setPower(0);
+        intakeTwo.setPower(0);*/
         double degrees = convertToPolarAngle(sideWays, forwardBackward);
         motorPower(degrees, forwardPower, sidePower, turnPower);
 
