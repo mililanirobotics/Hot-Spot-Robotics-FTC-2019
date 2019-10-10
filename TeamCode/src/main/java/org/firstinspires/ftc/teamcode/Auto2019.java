@@ -36,6 +36,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+
+import java.util.List;
+
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
  * It uses the common Pushbot hardware class to define the drive on the robot.
@@ -64,7 +72,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
-@Disabled
+
 public class Auto2019 extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -73,27 +81,28 @@ public class Auto2019 extends LinearOpMode {
     private ElapsedTime     runtime = new ElapsedTime();
 
     final static int DIAMETER                = 4;
-    final static double CIRCUMFRENCE         = Math.PI * DIAMETER;
+
+    final static double CIRCUMFRENCE         = Math.PI * DIAMETER; // calculates the circumfrence of the wheels in inches
     final static double GEARREDUCTION        = 1;
     final static int TICKSPERROTATION        = 1680;
+    public final static double ROBOTRADIOUS = 7.5;
+    public final static double TILELENGTH = 48;
 
+    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Stone";
+    private static final String LABEL_SECOND_ELEMENT = "Skystone";
+
+
+    // This is needed for the vuforia licence that we use for image detection
+    private static final String VUFORIA_KEY = "ARqoPXv/////AAABmZ9oE4NYn0cXsd928uU8EgMXcL9ps686/WyyudSMh8i+yq2a2P0udLUULuHoFvf2Ibcar1hHvdKyQDij94K3L36FbSp072xjzhvMAwGrbjBJd/1qAEVhaaJoeYl2ofDROH/LCMPwWg39fthIvMjAiv9JiFE+h/D9V0ocepY1I/8eGQH3dtq43QlLMlNWoz/zrP7wHQvIeB0XIYtjsWtz/ruz/542uajyWmd515SMl2Xpd5klGgjaQbbY7KJ8BotR7q45Jy1QTOvFjQ4UFFrb9+keNG3KEjCHGmn+95q+GEj14ThvysgFd9yVFvCTZmsHo1/d62/xkVlls6dLyleJCwImIKMHwcUp+l5NH2xxAFAR";
+
+    private VuforiaLocalizer vuforia;
+
+    private TFObjectDetector tfod;
+
+
+    //determins the amount of ticks per an inch
     static final double COUNTS_PER_INCH = (TICKSPERROTATION * GEARREDUCTION) / CIRCUMFRENCE;
-
-
-    public void MoveForward(int inches, double speed){
-        double rotation = inches / CIRCUMFRENCE;
-        double ticksMove = TICKSPERROTATION/rotation * rotation;
-        int newLeftTarget = robot.leftFront.getCurrentPosition() + (int) ticksMove;
-        int newRightTarget = robot.rightFront.getCurrentPosition() + (int) ticksMove;
-        robot.leftFront.setPower(speed);
-        robot.rightFront.setPower(speed);
-        robot.leftBack.setPower(speed);
-        robot.rightBack.setPower(speed);
-        robot.rightBack.setTargetPosition(-newRightTarget);
-        robot.rightFront.setTargetPosition(-newRightTarget);
-        robot.leftBack.setTargetPosition(newLeftTarget);
-        robot.leftFront.setTargetPosition(newLeftTarget);
-    }
 
     @Override
     public void runOpMode() {
@@ -104,18 +113,41 @@ public class Auto2019 extends LinearOpMode {
          *  em variables.
          * The init() method of the hardware class does all the work here
          */
+
         robot.init(hardwareMap);
 
-        // Send telemetry message to signify robot waiting;
+        // Init the vuforia
+        initVuforia();
+
+
+        // This is to check if the phone can use TensorFlow for the image recognition if it can't then the error pops up saying device is not compatible
+        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            initTfod();
+        } else {
+            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        }
+
+        if (tfod != null) {
+            tfod.activate();
+        }
+
+
+
+
+
+            // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
+        // Resets the encoders back to 0 for the ticks that it has calulated
         robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+
+        //Sets the motors to run using the encoders
         robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -128,12 +160,55 @@ public class Auto2019 extends LinearOpMode {
                           robot.rightFront.getCurrentPosition());
         telemetry.update();
 
+
+        // This is getting the amount of inches the wheel has to turn to reach 90 degrees
+        double inchesMoved = degreesToInches(90);
+
+        // Robot color sensors stating the values that the color sensor detected at the time
+        telemetry.addData("Color", "blue: %7d red: %7d", robot.color_Sensor.red(), robot.color_Sensor.blue());
+
+
+        //calls upon the encoderDrive function which converts the amount of inches into ticks that the encoder should be set to and sets the power to move the robot
+        //In this code the time out is meant to be a fail safe incase somthing goes wrong the code will timeout so it does not just keep going
+        encoderDrive(1,  inchesMoved,  -inchesMoved, 5.0);
+        encoderDrive(1, (TILELENGTH * 1) , (TILELENGTH * 1), 5.0);
+        encoderDrive(1,  -inchesMoved,  inchesMoved, 5.0);
+        encoderDrive(1, (TILELENGTH * 1) , (TILELENGTH * 1), 5.0);
+
+
+        encoderDrive(1,  -inchesMoved,  inchesMoved, 5.0);
+        encoderDrive(1, (TILELENGTH * 2.5) , (TILELENGTH * 2.5), 5.0);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
+        if (opModeIsActive()) {
+            while (opModeIsActive()) {
+                if (tfod != null) {
+                    // getUpdatedRecognitions() will return null if no new information is available since
+                    // the last time that call was made.
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                    if (updatedRecognitions != null) {
+                        telemetry.addData("# Object Detected", updatedRecognitions.size());
+
+                        // step through the list of recognitions and display boundary info.
+                        int i = 0;
+                        for (Recognition recognition : updatedRecognitions) {
+                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                    recognition.getLeft(), recognition.getTop());
+                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                    recognition.getRight(), recognition.getBottom());
+                        }
+                        telemetry.update();
+                    }
+                }
+            }
+        }
+
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(1,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
+
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -147,7 +222,6 @@ public class Auto2019 extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the opmode running.
      */
-
     public void pulley (double speed, double pullyInches, double timeoutS)
     {
         int newPulleyTarget;
@@ -185,14 +259,15 @@ public class Auto2019 extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftFrontTarget = robot.leftFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightFrontTarget = robot.rightFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftBackTarget = robot.leftFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightBackTarget = robot.rightFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            robot.leftFront.setTargetPosition(newLeftFrontTarget);
-            robot.rightFront.setTargetPosition(newRightFrontTarget);
-            robot.leftFront.setTargetPosition(newLeftBackTarget);
-            robot.rightFront.setTargetPosition(newRightBackTarget);
+            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.leftFront.setTargetPosition((int)(leftInches * COUNTS_PER_INCH));
+            robot.rightFront.setTargetPosition((int)(rightInches * COUNTS_PER_INCH));
+            robot.leftFront.setTargetPosition((int)(leftInches * COUNTS_PER_INCH));
+            robot.rightFront.setTargetPosition((int)(rightInches * COUNTS_PER_INCH));
 
             // Turn On RUN_TO_POSITION
             robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -202,10 +277,26 @@ public class Auto2019 extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.leftBack.setPower(Math.abs(speed));
-            robot.rightBack.setPower(Math.abs(speed));
-            robot.leftFront.setPower(Math.abs(speed));
-            robot.rightFront.setPower(Math.abs(speed));
+            if(leftInches < 0)
+            {
+                robot.leftBack.setPower(-speed);
+                robot.leftFront.setPower(-speed);
+            }
+            else if(rightInches < 0)
+            {
+                robot.rightBack.setPower(-speed);
+                robot.rightFront.setPower(-speed);
+            }
+            else if(leftInches > 0)
+            {
+                robot.leftBack.setPower(speed);
+                robot.leftFront.setPower(speed);
+            }
+            else if(rightInches > 0)
+            {
+                robot.rightBack.setPower(speed);
+                robot.rightFront.setPower(speed);
+            }
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -218,7 +309,6 @@ public class Auto2019 extends LinearOpMode {
                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
 
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftFrontTarget,  newRightFrontTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
                                             robot.leftFront.getCurrentPosition(),
                                             robot.rightFront.getCurrentPosition());
@@ -239,5 +329,33 @@ public class Auto2019 extends LinearOpMode {
 
             //  sleep(250);   // optional pause after each move
         }
+    }
+    public double degreesToInches(double degrees)
+    {
+        double radians = (degrees*(Math.PI/180));
+        double inchesMove = (radians * ROBOTRADIOUS);
+        return(inchesMove);
+    }
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraDirection = CameraDirection.BACK;
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
+    private void initTfod()
+    {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minimumConfidence = 0.8;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 }

@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 
 public class robotDeclarations
@@ -45,6 +46,7 @@ public class robotDeclarations
     public DcMotor intakeOne = null;
     public DcMotor intakeTwo = null;
     public DcMotor pulley = null;
+    public ColorSensor color_Sensor;
 
 
     /* local OpMode members. */
@@ -75,7 +77,7 @@ public class robotDeclarations
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);;
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Set all motors to zero power
@@ -91,6 +93,8 @@ public class robotDeclarations
         // May want to use RUN_USING_ENCODERS if encoders are installed.
         intakeOne.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakeTwo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        color_Sensor = hardwareMap.colorSensor.get("color");
     }
  }
 
