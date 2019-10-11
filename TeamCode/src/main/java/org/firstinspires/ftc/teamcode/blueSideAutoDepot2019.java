@@ -31,6 +31,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.robotDeclarations;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -73,32 +75,32 @@ import java.util.List;
 
 @Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
 
-public class Auto2019 extends LinearOpMode {
+public class blueSideAutoDepot2019 extends LinearOpMode {
 
     /* Declare OpMode members. */
-    robotDeclarations robot   = new robotDeclarations();// Use a Pushbot's hardware
+    robotDeclarations robot   = new robotDeclarations();// Use is calling upon the file called robotDeclarations where all the devices are init
 
-    private ElapsedTime     runtime = new ElapsedTime();
+    private ElapsedTime     runtime = new ElapsedTime(); // For the use of time
 
-    final static int DIAMETER                = 4;
+    final static int DIAMETER                = 4; // This is the diameter of the wheels of the robot in inches
 
-    final static double CIRCUMFRENCE         = Math.PI * DIAMETER; // calculates the circumfrence of the wheels in inches
-    final static double GEARREDUCTION        = 1;
-    final static int TICKSPERROTATION        = 1680;
-    public final static double ROBOTRADIOUS = 7.5;
-    public final static double TILELENGTH = 48;
+    final static double CIRCUMFRENCE         = Math.PI * DIAMETER; // calculates the circumference of the wheels in inches
+    final static double GEARREDUCTION        = 1; // If we were to have gears the gear reduction would go up or down depending
+    final static int TICKSPERROTATION        = 1680; // there is 1680 ticks per a revolution of a motor
+    public final static double ROBOTRADIOUS  = 7.5; // the radious of the robot is 7.5 inches
+    public final static double TILELENGTH    = 24; // the length of a tile is 24 inches or 2 feet
 
-    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
-    private static final String LABEL_FIRST_ELEMENT = "Stone";
-    private static final String LABEL_SECOND_ELEMENT = "Skystone";
+    private static final String TFOD_MODEL_ASSET = "Skystone.tflite"; // This is to define a variable of the model assets
+    private static final String LABEL_FIRST_ELEMENT = "Stone"; // This defines a variable for a stone for tensorflow
+    private static final String LABEL_SECOND_ELEMENT = "Skystone"; // This defines a variable to a skystone for tensorflow
 
 
     // This is needed for the vuforia licence that we use for image detection
     private static final String VUFORIA_KEY = "ARqoPXv/////AAABmZ9oE4NYn0cXsd928uU8EgMXcL9ps686/WyyudSMh8i+yq2a2P0udLUULuHoFvf2Ibcar1hHvdKyQDij94K3L36FbSp072xjzhvMAwGrbjBJd/1qAEVhaaJoeYl2ofDROH/LCMPwWg39fthIvMjAiv9JiFE+h/D9V0ocepY1I/8eGQH3dtq43QlLMlNWoz/zrP7wHQvIeB0XIYtjsWtz/ruz/542uajyWmd515SMl2Xpd5klGgjaQbbY7KJ8BotR7q45Jy1QTOvFjQ4UFFrb9+keNG3KEjCHGmn+95q+GEj14ThvysgFd9yVFvCTZmsHo1/d62/xkVlls6dLyleJCwImIKMHwcUp+l5NH2xxAFAR";
 
-    private VuforiaLocalizer vuforia;
+    private VuforiaLocalizer vuforia; // creates a variable to import the VuforiaLocalizer into a word more usable
 
-    private TFObjectDetector tfod;
+    private TFObjectDetector tfod; // creates a variable to import the TFObjectDetector into a word more usable
 
 
     //determins the amount of ticks per an inch
@@ -343,7 +345,8 @@ public class Auto2019 extends LinearOpMode {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.BACK;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
