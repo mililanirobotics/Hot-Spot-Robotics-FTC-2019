@@ -143,74 +143,53 @@ public class mecanumDrive extends OpMode
     //This funtion converts the dgrees into the power needed for the motors
     public void motorPower(double angle, double forwardPower, double sidePower, double turnPower)
     {
-        double threshold = 0.05;//This is used so that the input has to be greater than the threshold so movements not wanted don't happen
-        forwardPower = -forwardPower; // this variable is used to state the power needed when the y axis of joystick is moved
-       if(Math.abs(forwardPower) >= threshold && Math.abs(sidePower) < threshold && Math.abs(turnPower) < threshold)//checks to make sure that the y axis on the joystick is the only one getting power
-       {
-           leftBack.setPower(-forwardPower);//sets the powers to the motors
-           rightBack.setPower(-forwardPower);
-           leftFront.setPower(-forwardPower);
-           rightFront.setPower(-forwardPower);
-       }
-       else if(Math.abs(forwardPower) < threshold && Math.abs(sidePower) >= threshold && Math.abs(turnPower) < threshold)//checks to make sure that the x axis on the joystick is the only one getting power
-       {
-           leftBack.setPower(sidePower);
-           rightBack.setPower(-sidePower);
-           leftFront.setPower(-sidePower);
-           rightFront.setPower(sidePower);
-       }
-       else if(Math.abs(forwardPower) < threshold && Math.abs(sidePower) < threshold && Math.abs(turnPower) >= threshold)//checks to make sure that the y axis on the joystick on thr right side is the only one getting power
-       {
-           leftBack.setPower(-turnPower);
-           rightBack.setPower(turnPower);
-           leftFront.setPower(-turnPower);
-           rightFront.setPower(turnPower);
-       }
-       else{
-           // degrees is proportional to power / powerScale
-           double leftFrontPower = forwardPower + sidePower + turnPower;
-           double rightFrontPower = -forwardPower + sidePower + turnPower;
-           double rightBackPower = -forwardPower - sidePower + turnPower;
-           double leftBackPower = forwardPower - sidePower + turnPower;
-           double powerScale = 3;
-           if (angle > 0 && angle < 45)
-           {
-               powerScale = 1 + Math.abs(forwardPower/sidePower) + Math.abs(turnPower);
-           }
-           else if (angle >= 45 && angle < 90)
-           {
-               powerScale = 1 + Math.abs(sidePower/forwardPower) + Math.abs(turnPower);
-           }
-           else if (angle > 90 && angle < 135)
-           {
-               powerScale = 1 + Math.abs(forwardPower/sidePower) + Math.abs(turnPower);
-           }
-           else if (angle >= 135 && angle < 180)
-           {
-               powerScale = 1 + Math.abs(sidePower/forwardPower) + Math.abs(turnPower);
-           }
-           else if (angle >= -179 && angle < -135)
-           {
-               powerScale = 1 + Math.abs(forwardPower/sidePower) + Math.abs(turnPower);
-           }
-           else if (angle >= -135 && angle < -90)
-           {
-               powerScale = 1 + Math.abs(sidePower/forwardPower) + Math.abs(turnPower);
-           }
-           else if (angle > -90 && angle < -45)
-           {
-               powerScale = 1 + Math.abs(forwardPower/sidePower) + Math.abs(turnPower);
-           }
-           else if (angle >= -45 && angle < 0)
-           {
-               powerScale = 1 + Math.abs(sidePower/forwardPower) + Math.abs(turnPower);
-           }
-           leftBack.setPower(-(leftBackPower/powerScale));
-           rightBack.setPower(-(rightBackPower/powerScale));
-           leftFront.setPower(-(leftFrontPower/powerScale));
-           rightFront.setPower(-(rightFrontPower/powerScale));
-       }
+        if(Math.abs(forwardPower) > 0.05 && Math.abs(turnPower) > 0.05 && Math.abs(sidePower) < 0.05)
+        {
+            if(turnPower > 0)
+            {
+                leftBack.setPower(forwardPower);
+                leftFront.setPower(forwardPower);
+                rightBack.setPower(0);
+                rightFront.setPower(0);
+            }
+            else if(turnPower < 0)
+            {
+                leftBack.setPower(0);
+                leftFront.setPower(0);
+                rightBack.setPower(forwardPower);
+                rightFront.setPower(forwardPower);
+            }
+
+        }
+        else
+            {
+            double leftFrontPower;
+            double rightFrontPower;
+            double leftBackPower;
+            double rightBackPower;
+            double power;
+
+            double radians = (angle * (Math.PI / 180)); //This is to the radians out of the degrees to use the equation
+            if (forwardPower >= sidePower) {
+                power = (forwardPower); // To determine the power it should use
+            } else if (forwardPower <= sidePower) {
+                power = (sidePower); // To determine the power it should use
+            } else {
+                power = 0;
+            }
+
+            leftFrontPower = (power * Math.sin(radians + (Math.PI / 4)));
+            rightFrontPower = (power * Math.cos(radians + (Math.PI / 4)));
+            leftBackPower = (power * Math.cos(radians + (Math.PI / 4)));
+            rightBackPower = (power * Math.sin(radians + (Math.PI / 4)));
+            leftFront.setPower(leftFrontPower);
+            rightFront.setPower(rightFrontPower);
+            leftBack.setPower(leftBackPower);
+            rightBack.setPower(rightBackPower);
+        }
+
     }
+
 
 
     @Override
