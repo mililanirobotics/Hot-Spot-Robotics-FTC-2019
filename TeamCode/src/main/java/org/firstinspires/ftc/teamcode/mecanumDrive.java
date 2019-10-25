@@ -54,24 +54,24 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="mecanumDrive", group="Iterative Opmode")
 
-public class mecanumDrive extends OpMode
-{
+public class mecanumDrive extends OpMode {
     // Declare OpMode members.
     public final static double heightOfLift = 11; // This variable is a static variable that holds the height of the lift in inches
 
     private ElapsedTime runtime = new ElapsedTime();
 
     // This code is to set the DcMotors to a variable
-    /*private DcMotor leftBack = null; // The left back motor
-    private DcMotor rightBack = null; // The right back motor
-    private DcMotor leftFront = null; // The left front motor
-    private DcMotor rightFront = null; // the right front motor
+    //private DcMotor leftBack = null; // The left back motor
+    //private DcMotor rightBack = null; // The right back motor
+    //private DcMotor leftFront = null; // The left front motor
+    //private DcMotor rightFront = null; // the right front motor
     private DcMotor pulley = null; // This is for the lift
 
     // This code is to set the Servos to a variable
-    private Servo armOne; // For the claw*/
+     private Servo armOne;  //For the claw*/
     private Servo foundationOne;
     private Servo foundationTwo;
+
 
     double slowMode = 1;
 
@@ -92,24 +92,24 @@ public class mecanumDrive extends OpMode
         pulley = hardwareMap.get (DcMotor.class, "Lift");*/
 
 
-        //armOne = hardwareMap.get(Servo.class, "Claw");
+        armOne = hardwareMap.get(Servo.class, "Claw");
         foundationOne = hardwareMap.get(Servo.class, "foundation_One");
         foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        /*leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        pulley.setDirection (DcMotor.Direction.FORWARD);
+        //leftBack.setDirection(DcMotor.Direction.FORWARD);
+        //rightBack.setDirection(DcMotor.Direction.REVERSE);
+        //leftFront.setDirection(DcMotor.Direction.FORWARD);
+        //rightFront.setDirection(DcMotor.Direction.REVERSE);
+        //pulley.setDirection (DcMotor.Direction.FORWARD);
 
         //This is to set the motor to reset the encoders in the motor
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // This is to state to use the encoder
-        pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);*/
+        //pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);*/
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -131,16 +131,14 @@ public class mecanumDrive extends OpMode
     }
 
     //This function converts the points from the joysticks to degrees
-    public double driveAngle (double x, double y)
-    {
-        double degree = (((Math.atan2(y, x))* 180/Math.PI)) + 90;
-        if (degree > 180)
-        {
+    public double driveAngle(double x, double y) {
+        double degree = (((Math.atan2(y, x)) * 180 / Math.PI)) + 90;
+        if (degree > 180) {
             degree -= 360;
         }
         return degree;
     }
-    //This funtion converts the dgrees into the power needed for the motors
+    //This function converts the degrees into the power needed for the motors
     /*public void motorPower(double angle, double forwardPower, double sidePower, double turnPower, double diviser)
     {
         if(Math.abs(forwardPower) > 0.05 && Math.abs(turnPower) > 0.05 && Math.abs(sidePower) < 0.05)
@@ -202,7 +200,6 @@ public class mecanumDrive extends OpMode
     }*/
 
 
-
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
@@ -219,11 +216,11 @@ public class mecanumDrive extends OpMode
         // - This uses basic math to combine motions and is easier to drive straight.
         double forwardBackward = gamepad1.left_stick_y;
         double sideWays = gamepad1.left_stick_x;
-        double turn  =  gamepad1.right_stick_x;
+        double turn = gamepad1.right_stick_x;
         double liftMechanism = gamepad2.left_stick_y;
 
 
-        forwardPower = Range.clip(forwardBackward, -1.0,1.0);
+        forwardPower = Range.clip(forwardBackward, -1.0, 1.0);
         sidePower = Range.clip(sideWays, -1.0, 1.0);
         turnPower = Range.clip(turn, -1.0, 1.0);
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
@@ -237,66 +234,66 @@ public class mecanumDrive extends OpMode
             slowMode = 1;
         }
 
-        if (gamepad1.right_bumper == true)
-        {
+        if (gamepad1.right_bumper == true) {
             slowMode = 2;
+
         }
+        if (gamepad1.left_bumper == true) ;
+        slowMode = 0;
+        {
 
 
-        //calls upon the function of degrees to return the degrees of the lef
-        //
-        //
-        // t joystick on controller 1
-        double degrees = driveAngle(sideWays, forwardBackward);
+            //calls upon the function of degrees to return the degrees of the lef
+            //
+            //
+            // t joystick on controller 1
+            double degrees = driveAngle(sideWays, forwardBackward);
 
-        // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-        //motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
+            // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
+            //motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
 
-        // this sets the power of the swing motor to the value of the right joystick on controller 2
+            // this sets the power of the swing motor to the value of the right joystick on controller 2
 
-        // This sets the power of the lift motor to the value of the left joystick on controller 2
-        //pulley.setPower(liftpower);
-        /*if (Math.abs(liftpower) < 0.05)
+            // This sets the power of the lift motor to the value of the left joystick on controller 2
+            pulley.setPower(liftpower);
+        if (Math.abs(liftpower) < 0.05)
+
         {
             pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }*/
-
-        if (gamepad2.a == true)
-        {
-            foundationOne.setPosition(0.5);
-            foundationTwo.setPosition(0.5);
-        }
-        else if (gamepad2.b == true)
-        {
-            foundationOne.setPosition(0);
-            foundationTwo.setPosition(0);
         }
 
-        // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
+            if (gamepad2.a == true) {
+                foundationOne.setPosition(0.5);
+                foundationTwo.setPosition(0.5);
+            } else if (gamepad2.b == true) {
+                foundationOne.setPosition(0);
+                foundationTwo.setPosition(0);
+            }
+
+            // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
 
-        // When the right trigger is slightly pressed the clow will close up
-        /*if (gamepad2.right_trigger >= .1)
-        {
-            armOne.setPosition(0);
+            // When the right trigger is slightly pressed the claw will close up
+            if (gamepad2.right_trigger >= .1) {
+                armOne.setPosition(0);
+            }
+            // When the left trigger is slightly pressed the claw will go out
+            else if (gamepad2.left_trigger >= .1) ;
+            {
+                armOne.setPosition(1);
+            }
+
+
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Motors", "degrees (%.2f)", degrees);
         }
-        // When the left trigger is slightly pressed the claw will go out
-        else if(gamepad2.left_trigger >= .1)
-        {
-            armOne.setPosition(1);
-        }*/
 
+        /*
+         * Code to run ONCE after the driver hits STOP
+         */
+        //public void error (illegal start of expression)
+        }
 
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "degrees (%.2f)", degrees);
     }
 
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-    }
-
-}
