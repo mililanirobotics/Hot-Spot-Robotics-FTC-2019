@@ -85,11 +85,11 @@ public class mecanumDrive extends OpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        /*leftBack  = hardwareMap.get(DcMotor.class, "left_Back"); // Green, Violet
+        leftBack  = hardwareMap.get(DcMotor.class, "left_Back"); // Green, Violet
         rightBack = hardwareMap.get(DcMotor.class, "right_Back"); // Green, Blue
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
-        pulley = hardwareMap.get (DcMotor.class, "Lift");*/
+        pulley = hardwareMap.get (DcMotor.class, "Lift");
 
 
         armOne = hardwareMap.get(Servo.class, "Claw");
@@ -139,7 +139,7 @@ public class mecanumDrive extends OpMode {
         return degree;
     }
     //This function converts the degrees into the power needed for the motors
-    /*public void motorPower(double angle, double forwardPower, double sidePower, double turnPower, double diviser)
+    public void motorPower(double angle, double forwardPower, double sidePower, double turnPower, double diviser)
     {
         if(Math.abs(forwardPower) > 0.05 && Math.abs(turnPower) > 0.05 && Math.abs(sidePower) < 0.05)
         {
@@ -175,6 +175,7 @@ public class mecanumDrive extends OpMode {
             double power;
 
             double radians = (angle * (Math.PI / 180)); //This is to the radians out of the degrees to use the equation
+            
             if (Math.abs(forwardPower) >= Math.abs(sidePower)) {
                 power = (Math.abs(forwardPower)); // To determine the power it should use
             } else if (Math.abs(forwardPower) <= Math.abs(sidePower)) {
@@ -187,17 +188,19 @@ public class mecanumDrive extends OpMode {
             rightFrontPower = (power * Math.cos(radians + (Math.PI / 4)));
             leftBackPower = (power * Math.cos(radians + (Math.PI / 4)));
             rightBackPower = (power * Math.sin(radians + (Math.PI / 4)));
+            
             leftFrontPower = (leftFrontPower/diviser);
             rightFrontPower = (rightFrontPower/diviser);
             leftBackPower = (leftBackPower/diviser);
             rightBackPower = (rightBackPower/diviser);
+            
             leftFront.setPower(-leftFrontPower);
             rightFront.setPower(-rightFrontPower);
             leftBack.setPower(-leftBackPower);
             rightBack.setPower(-rightBackPower);
         }
 
-    }*/
+    }
 
 
     @Override
@@ -230,7 +233,7 @@ public class mecanumDrive extends OpMode {
         // - This requires no math, but it is hard to drive forward slowly and keep straight.
         // leftPower  = -gamepad1.left_stick_y ;
         // rightPower = -gamepad1.right_stick_y ;
-        if (gamepad1.right_trigger >= .1) {
+        if (gamepad1.left_bumper == true) {
             slowMode = 1;
         }
 
@@ -238,37 +241,34 @@ public class mecanumDrive extends OpMode {
             slowMode = 2;
 
         }
-        if (gamepad1.left_bumper == true) ;
-        slowMode = 0;
-        {
 
 
             //calls upon the function of degrees to return the degrees of the lef
             //
             //
             // t joystick on controller 1
-            double degrees = driveAngle(sideWays, forwardBackward);
+        double degrees = driveAngle(sideWays, forwardBackward);
 
             // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-            //motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
+            motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
 
             // this sets the power of the swing motor to the value of the right joystick on controller 2
 
             // This sets the power of the lift motor to the value of the left joystick on controller 2
-            pulley.setPower(liftpower);
+        pulley.setPower(liftpower);
         if (Math.abs(liftpower) < 0.05)
 
         {
             pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-            if (gamepad2.a == true) {
+            /*if (gamepad2.a == true) {
                 foundationOne.setPosition(0.5);
                 foundationTwo.setPosition(0.5);
             } else if (gamepad2.b == true) {
                 foundationOne.setPosition(0);
                 foundationTwo.setPosition(0);
-            }
+            }*/
 
             // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
