@@ -61,10 +61,10 @@ public class mecanumDrive extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     // This code is to set the DcMotors to a variable
-    //private DcMotor leftBack = null; // The left back motor
-    //private DcMotor rightBack = null; // The right back motor
-    //private DcMotor leftFront = null; // The left front motor
-    //private DcMotor rightFront = null; // the right front motor
+    private DcMotor leftBack = null; // The left back motor
+    private DcMotor rightBack = null; // The right back motor
+    private DcMotor leftFront = null; // The left front motor
+    private DcMotor rightFront = null; // the right front motor
     private DcMotor pulley = null; // This is for the lift
 
     // This code is to set the Servos to a variable
@@ -99,17 +99,17 @@ public class mecanumDrive extends OpMode {
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        //leftBack.setDirection(DcMotor.Direction.FORWARD);
-        //rightBack.setDirection(DcMotor.Direction.REVERSE);
-        //leftFront.setDirection(DcMotor.Direction.FORWARD);
-        //rightFront.setDirection(DcMotor.Direction.REVERSE);
-        //pulley.setDirection (DcMotor.Direction.FORWARD);
+        leftBack.setDirection(DcMotor.Direction.FORWARD);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        pulley.setDirection (DcMotor.Direction.FORWARD);
 
         //This is to set the motor to reset the encoders in the motor
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // This is to state to use the encoder
-        //pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);*/
+        pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
