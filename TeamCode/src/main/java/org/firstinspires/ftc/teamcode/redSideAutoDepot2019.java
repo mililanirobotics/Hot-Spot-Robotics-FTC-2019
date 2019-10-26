@@ -164,7 +164,6 @@ public class redSideAutoDepot2019 extends LinearOpMode {
         double inchesMoved = degreesToInches(90);
 
         // Robot color sensors stating the values that the color sensor detected at the time
-        telemetry.addData("Color", "blue: %7d red: %7d", robot.color_Sensor.red(), robot.color_Sensor.blue());
 
 
         //calls upon the encoderDrive function which converts the amount of inches into ticks that the encoder should be set to and sets the power to move the robot
@@ -175,13 +174,10 @@ public class redSideAutoDepot2019 extends LinearOpMode {
         encoderDrive(1, (TILELENGTH * 1) , (TILELENGTH * 1), 5.0);
 
 
-        encoderDrive(1,  inchesMoved,  -inchesMoved, 5.0);
-        encoderDrive(1, (TILELENGTH * 2.5) , (TILELENGTH * 2.5), 5.0);
-
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        if (opModeIsActive()) {
+        /*if (opModeIsActive()) {
             while (opModeIsActive()) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
@@ -203,7 +199,7 @@ public class redSideAutoDepot2019 extends LinearOpMode {
                     }
                 }
             }
-        }
+        }*/
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
@@ -221,23 +217,33 @@ public class redSideAutoDepot2019 extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the opmode running.
      */
-    public void pulley (double speed, double pullyInches, double timeoutS)
+    public void pulley (double speed, double pulleyInches, double timeoutS)
     {
-        int newPulleyTarget;
 
         if (opModeIsActive())
         {
-            newPulleyTarget = robot.leftFront.getCurrentPosition() + (int)(pullyInches * COUNTS_PER_INCH);
-            robot.pulley.setTargetPosition(newPulleyTarget);
+            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.leftFront.setTargetPosition((int)(pulleyInches * COUNTS_PER_INCH));
+
             robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             runtime.reset();
-            robot.leftBack.setPower(Math.abs(speed));
+
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
+                    (robot.pulley.isBusy())) {
+                if (pulleyInches < 0)
+                {
+                    robot.pulley.setPower(-speed);
+                }
+                else if(pulleyInches > 0)
+                {
+                    robot.pulley.setPower(speed);
+                }
 
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d",  newPulleyTarget);
+                telemetry.addData("Path1",  "Running to %7d",  robot.pulley.getTargetPosition());
                 telemetry.addData("Path2",  "Running at %7d :%7d",
                         robot.pulley.getCurrentPosition());
                 telemetry.update();
@@ -249,10 +255,6 @@ public class redSideAutoDepot2019 extends LinearOpMode {
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
-        int newLeftFrontTarget;
-        int newRightFrontTarget;
-        int newLeftBackTarget;
-        int newRightBackTarget;
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {

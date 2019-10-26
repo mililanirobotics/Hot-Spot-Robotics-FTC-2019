@@ -69,8 +69,8 @@ public class mecanumDrive extends OpMode {
 
     // This code is to set the Servos to a variable
      private Servo armOne;  //For the claw*/
-    private Servo foundationOne;
-    private Servo foundationTwo;
+    //private Servo foundationOne;
+    //private Servo foundationTwo;
 
 
     double slowMode = 1;
@@ -93,8 +93,8 @@ public class mecanumDrive extends OpMode {
 
 
         armOne = hardwareMap.get(Servo.class, "Claw");
-        foundationOne = hardwareMap.get(Servo.class, "foundation_One");
-        foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
+        //foundationOne = hardwareMap.get(Servo.class, "foundation_One");
+        //foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -228,36 +228,27 @@ public class mecanumDrive extends OpMode {
         turnPower = Range.clip(turn, -1.0, 1.0);
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
 
-
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-        // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
-        if (gamepad1.left_bumper == true) {
+        if (gamepad1.left_bumper == true)
+        {
             slowMode = 1;
         }
 
-        if (gamepad1.right_bumper == true) {
+        if (gamepad1.right_bumper == true)
+        {
             slowMode = 2;
 
         }
 
-
-            //calls upon the function of degrees to return the degrees of the lef
-            //
-            //
-            // t joystick on controller 1
         double degrees = driveAngle(sideWays, forwardBackward);
 
-            // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-            motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
+        // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
+        motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
 
             // this sets the power of the swing motor to the value of the right joystick on controller 2
 
             // This sets the power of the lift motor to the value of the left joystick on controller 2
         pulley.setPower(liftpower);
         if (Math.abs(liftpower) < 0.05)
-
         {
             pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
@@ -274,26 +265,21 @@ public class mecanumDrive extends OpMode {
 
 
             // When the right trigger is slightly pressed the claw will close up
-            if (gamepad2.right_trigger >= .1) {
-                armOne.setPosition(0);
-            }
+        if (gamepad2.right_trigger >= .1)
+        {
+            armOne.setPosition(0);
+        }
             // When the left trigger is slightly pressed the claw will go out
-            else if (gamepad2.left_trigger >= .1) ;
-            {
-                armOne.setPosition(1);
-            }
-
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "degrees (%.2f)", degrees);
+        else if (gamepad2.left_trigger >= .1) ;
+        {
+            armOne.setPosition(1);
         }
 
-        /*
-         * Code to run ONCE after the driver hits STOP
-         */
-        //public void error (illegal start of expression)
-        }
 
+        // Show the elapsed game time and wheel power.
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Motors", "degrees (%.2f)", degrees);
     }
+
+}
 

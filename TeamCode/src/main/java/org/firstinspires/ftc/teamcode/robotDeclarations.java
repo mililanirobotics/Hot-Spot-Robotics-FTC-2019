@@ -44,16 +44,12 @@ public class robotDeclarations
     public DcMotor rightBack = null; // drive Motors
     public DcMotor leftFront = null; // drive Motors
     public DcMotor rightFront = null; // drive Motors
-    public DcMotor intakeOne = null; //intake Motors
-    public DcMotor intakeTwo = null; //intake Motors
     public DcMotor pulley = null; // lift Motor
-    public DcMotor swing = null; // moving Motor
 
     // This is to assign the function of the servo to the variable
     public Servo claw; // claw servo
 
     // This is to assign the function of the color sensor to the the variable
-    public ColorSensor color_Sensor; // For the foundation detection
 
 
 
@@ -73,12 +69,10 @@ public class robotDeclarations
         rightBack = hardwareMap.get(DcMotor.class, "right_Back"); // Green, Blue
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
-        intakeOne = hardwareMap.get(DcMotor.class, "intake_One");
-        intakeTwo = hardwareMap.get(DcMotor.class, "intake_Two");
         pulley = hardwareMap.get (DcMotor.class, "Lift");
 
         // Defines and Initialize the Servo
-        swing = hardwareMap.get(DcMotor.class, "swing_Claw");
+        claw = hardwareMap.get(Servo.class, "Claw");
 
         // Changes the direction of the motor if the motor is reversed
         leftBack.setDirection(DcMotor.Direction.FORWARD);
@@ -99,17 +93,11 @@ public class robotDeclarations
         rightBack.setPower(0);
         leftFront.setPower(0);
         rightFront.setPower(0);
-        intakeOne.setPower(0);
-        intakeTwo.setPower(0);
         pulley.setPower(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
-        intakeOne.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeTwo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // This inits the color sensor
-        color_Sensor = hardwareMap.colorSensor.get("color");
     }
  }
 

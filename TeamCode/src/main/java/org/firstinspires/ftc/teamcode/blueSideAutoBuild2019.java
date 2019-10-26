@@ -69,7 +69,7 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
+@Autonomous(name="blueSideAutoBuild2019", group="Pushbot")
 
 public class blueSideAutoBuild2019 extends LinearOpMode {
 
@@ -162,8 +162,6 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
         // This is getting the amount of inches the wheel has to turn to reach 90 degrees
         double inchesMoved = degreesToInches(90);
 
-        // Robot color sensors stating the values that the color sensor detected at the time
-        telemetry.addData("Color", "blue: %7d red: %7d", robot.color_Sensor.red(), robot.color_Sensor.blue());
 
 
         //calls upon the encoderDrive function which converts the amount of inches into ticks that the encoder should be set to and sets the power to move the robot
@@ -174,29 +172,7 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                    if (updatedRecognitions != null) {
-                        telemetry.addData("# Object Detected", updatedRecognitions.size());
 
-                        // step through the list of recognitions and display boundary info.
-                        int i = 0;
-                        for (Recognition recognition : updatedRecognitions) {
-                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                    recognition.getLeft(), recognition.getTop());
-                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                    recognition.getRight(), recognition.getBottom());
-                        }
-                        telemetry.update();
-                    }
-                }
-            }
-        }
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
@@ -214,30 +190,7 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the opmode running.
      */
-    public void pulley (double speed, double pullyInches, double timeoutS)
-    {
-        int newPulleyTarget;
 
-        if (opModeIsActive())
-        {
-            newPulleyTarget = robot.leftFront.getCurrentPosition() + (int)(pullyInches * COUNTS_PER_INCH);
-            robot.pulley.setTargetPosition(newPulleyTarget);
-            robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            runtime.reset();
-            robot.leftBack.setPower(Math.abs(speed));
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
-
-                // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d",  newPulleyTarget);
-                telemetry.addData("Path2",  "Running at %7d :%7d",
-                        robot.pulley.getCurrentPosition());
-                telemetry.update();
-            }
-        }
-
-    }
 
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
@@ -258,8 +211,8 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
 
             robot.leftFront.setTargetPosition((int)(leftInches * COUNTS_PER_INCH));
             robot.rightFront.setTargetPosition((int)(rightInches * COUNTS_PER_INCH));
-            robot.leftFront.setTargetPosition((int)(leftInches * COUNTS_PER_INCH));
-            robot.rightFront.setTargetPosition((int)(rightInches * COUNTS_PER_INCH));
+            robot.leftBack.setTargetPosition((int)(leftInches * COUNTS_PER_INCH));
+            robot.rightBack.setTargetPosition((int)(rightInches * COUNTS_PER_INCH));
 
             // Turn On RUN_TO_POSITION
             robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -269,26 +222,7 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            if(leftInches < 0)
-            {
-                robot.leftBack.setPower(-speed);
-                robot.leftFront.setPower(-speed);
-            }
-            else if(rightInches < 0)
-            {
-                robot.rightBack.setPower(-speed);
-                robot.rightFront.setPower(-speed);
-            }
-            else if(leftInches > 0)
-            {
-                robot.leftBack.setPower(speed);
-                robot.leftFront.setPower(speed);
-            }
-            else if(rightInches > 0)
-            {
-                robot.rightBack.setPower(speed);
-                robot.rightFront.setPower(speed);
-            }
+
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -300,6 +234,26 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
                    (runtime.seconds() < timeoutS) &&
                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
 
+                if(leftInches < 0)
+                {
+                    robot.leftBack.setPower(-speed);
+                    robot.leftFront.setPower(-speed);
+                }
+                else if(rightInches < 0)
+                {
+                    robot.rightBack.setPower(-speed);
+                    robot.rightFront.setPower(-speed);
+                }
+                else if(leftInches > 0)
+                {
+                    robot.leftBack.setPower(speed);
+                    robot.leftFront.setPower(speed);
+                }
+                else if(rightInches > 0)
+                {
+                    robot.rightBack.setPower(speed);
+                    robot.rightFront.setPower(speed);
+                }
                 // Display it for the driver.
                 telemetry.addData("Path2",  "Running at %7d :%7d",
                                             robot.leftFront.getCurrentPosition(),
