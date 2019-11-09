@@ -45,9 +45,12 @@ public class robotDeclarations
     public DcMotor leftFront = null; // drive Motors
     public DcMotor rightFront = null; // drive Motors
     public DcMotor pulley = null; // lift Motor
+    private DcMotor clawLift = null;
 
     // This is to assign the function of the servo to the variable
     public Servo claw; // claw servo
+    private Servo foundationOne;
+    private Servo foundationTwo;
 
     // This is to assign the function of the color sensor to the the variable
 
@@ -70,9 +73,14 @@ public class robotDeclarations
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
         pulley = hardwareMap.get (DcMotor.class, "Lift");
+        clawLift = hardwareMap.get(DcMotor.class, "claw_Lift");
+
 
         // Defines and Initialize the Servo
         claw = hardwareMap.get(Servo.class, "Claw");
+        foundationOne = hardwareMap.get(Servo.class, "foundation_One");
+        foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
+
 
         // Changes the direction of the motor if the motor is reversed
         leftBack.setDirection(DcMotor.Direction.FORWARD);

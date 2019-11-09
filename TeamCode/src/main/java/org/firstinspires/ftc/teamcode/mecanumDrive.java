@@ -66,11 +66,12 @@ public class mecanumDrive extends OpMode {
     private DcMotor leftFront = null; // The left front motor
     private DcMotor rightFront = null; // the right front motor
     private DcMotor pulley = null; // This is for the lift
+    private DcMotor clawLift = null;
 
     // This code is to set the Servos to a variable
-     private Servo armOne;  //For the claw*/
-    //private Servo foundationOne;
-    //private Servo foundationTwo;
+     private Servo claw;  //For the claw*/
+    private Servo foundationOne;
+    private Servo foundationTwo;
 
 
     double slowMode = 1;
@@ -90,11 +91,12 @@ public class mecanumDrive extends OpMode {
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
         pulley = hardwareMap.get (DcMotor.class, "Lift");
+        clawLift = hardwareMap.get(DcMotor.class, "claw_Lift");
 
 
-        armOne = hardwareMap.get(Servo.class, "Claw");
-        //foundationOne = hardwareMap.get(Servo.class, "foundation_One");
-        //foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
+        claw = hardwareMap.get(Servo.class, "Claw");
+        foundationOne = hardwareMap.get(Servo.class, "foundation_One");
+        foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -104,12 +106,21 @@ public class mecanumDrive extends OpMode {
         leftFront.setDirection(DcMotor.Direction.FORWARD);
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         pulley.setDirection (DcMotor.Direction.FORWARD);
+        clawLift.setDirection(DcMotor.Direction.FORWARD);
 
         //This is to set the motor to reset the encoders in the motor
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // This is to state to use the encoder
         pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -210,6 +221,7 @@ public class mecanumDrive extends OpMode {
         double sidePower;
         double turnPower;
         double liftpower;
+        double clawPower;
 
 
         // Choose to drive using either Tank Mode, or POV Mode
@@ -221,12 +233,14 @@ public class mecanumDrive extends OpMode {
         double sideWays = gamepad1.left_stick_x;
         double turn = gamepad1.right_stick_x;
         double liftMechanism = gamepad2.left_stick_y;
+        double pivot = gamepad2.right_stick_x;
 
 
         forwardPower = Range.clip(forwardBackward, -1.0, 1.0);
         sidePower = Range.clip(sideWays, -1.0, 1.0);
         turnPower = Range.clip(turn, -1.0, 1.0);
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
+        clawPower = Range.clip(pivot, -1, 1);
 
         if (gamepad1.left_bumper == true)
         {
@@ -253,32 +267,37 @@ public class mecanumDrive extends OpMode {
             pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-            /*if (gamepad2.a == true) {
-                foundationOne.setPosition(0.5);
-                foundationTwo.setPosition(0.5);
-            } else if (gamepad2.b == true) {
-                foundationOne.setPosition(0);
-                foundationTwo.setPosition(0);
-            }*/
+        if (gamepad2.a == true) {
+            foundationOne.setPosition(1);
+            foundationTwo.setPosition(1);
+        }
+        else if (gamepad2.b == true) {
+            foundationOne.setPosition(0);
+            foundationTwo.setPosition(0);
+        }
+
+        clawLift.setPower(clawPower);
 
             // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
 
             // When the right trigger is slightly pressed the claw will close up
-        if (gamepad2.right_trigger >= .1)
+        if (gamepad2.right_trigger >= .5)
         {
-            armOne.setPosition(0);
+            claw.setPosition(0);
         }
             // When the left trigger is slightly pressed the claw will go out
-        else if (gamepad2.left_trigger >= .1) ;
+        else if (gamepad2.left_trigger >= .5) ;
         {
-            armOne.setPosition(1);
+            claw.setPosition(1);
         }
 
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "degrees (%.2f)", degrees);
+        telemetry.addData("Motors", "slowmode: (%.2f)", slowMode);
+        telemetry.addData("Motors", "leftFront: (%.2f), rightFront: (%.2f), leftBack: (%.2f), rightBack: (%.2f)", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
     }
 
 }
