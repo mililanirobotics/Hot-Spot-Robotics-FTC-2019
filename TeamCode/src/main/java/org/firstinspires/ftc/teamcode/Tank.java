@@ -32,11 +32,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -52,9 +50,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="mecanumDrive", group="Iterative Opmode")
+@TeleOp(name="Tank", group="Iterative Opmode")
 
-public class mecanumDrive extends OpMode {
+public class Tank extends OpMode {
     // Declare OpMode members.
     public final static double heightOfLift = 11; // This variable is a static variable that holds the height of the lift in inches
 
@@ -69,7 +67,7 @@ public class mecanumDrive extends OpMode {
     private DcMotor clawLift = null;
 
     // This code is to set the Servos to a variable
-    private Servo claw;  //For the claw*/
+     private Servo claw;  //For the claw*/
     private Servo foundationOne;
     private Servo foundationTwo;
 
@@ -108,16 +106,16 @@ public class mecanumDrive extends OpMode {
         pulley.setDirection (DcMotor.Direction.FORWARD);
         clawLift.setDirection(DcMotor.Direction.FORWARD);
 
+        claw.setPosition(0);
+        foundationOne.setPosition(0);
+        foundationTwo.setPosition(0);
+
         //This is to set the motor to reset the encoders in the motor
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        claw.setPosition(0);
-        foundationOne.setPosition(0);
-        foundationTwo.setPosition(0);
 
         // This is to state to use the encoder
         pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -221,9 +219,10 @@ public class mecanumDrive extends OpMode {
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double forwardPower;
-        double sidePower;
-        double turnPower;
+        double leftPower;
+        double rightPower;
+        double rightSidePower;
+        double leftSidePower;
         double liftpower;
         double clawPower;
 
@@ -233,21 +232,51 @@ public class mecanumDrive extends OpMode {
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double forwardBackward = gamepad1.left_stick_y;
-        double sideWays = gamepad1.left_stick_x;
-        double turn = gamepad1.right_stick_x;
+        double left = gamepad1.left_stick_y;
+        double leftSide = gamepad1.left_stick_x;
+        double right = gamepad1.right_stick_y;
+        double rightSide = gamepad1.right_stick_x;
         double liftMechanism = gamepad2.left_stick_y;
         double pivot = gamepad2.right_stick_x;
 
 
-        forwardPower = Range.clip(forwardBackward, -1.0, 1.0);
-        sidePower = Range.clip(sideWays, -1.0, 1.0);
-        turnPower = Range.clip(turn, -1.0, 1.0);
+        leftPower = Range.clip(left, -1.0, 1.0);
+        rightPower = Range.clip(right, -1.0, 1.0);
+        leftSidePower = Range.clip(leftSide, -1.0, 1.0);
+        rightSidePower = Range.clip(rightSide, -1.0, 1.0);
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
         clawPower = Range.clip(pivot, -1, 1);
 
-        /*
-        if (gamepad1.left_bumper == true)
+        if (Math.abs(leftPower) >= .05) {
+            leftFront.setPower(leftPower);
+            leftBack.setPower(leftPower);
+        }
+        if (Math.abs(rightPower) >= .05)
+        {
+            rightFront.setPower(rightPower);
+            rightBack.setPower(rightPower);
+        }
+        if (Math.abs(leftSidePower) >= .05)
+        {
+            leftFront.setPower(leftPower);
+            leftBack.setPower(-leftPower);
+        }
+        if(Math.abs(rightSidePower) >= 0.5)
+        {
+            rightFront.setPower(-rightPower);
+            rightBack.setPower(rightPower);
+        }
+        else if(Math.abs(rightPower) <= 0.05 && Math.abs(leftPower) <= 0.05 && Math.abs(rightSidePower) <= 0.05 && Math.abs(leftSidePower) <= 0.05){
+            rightFront.setPower(0);
+            rightBack.setPower(0);
+            leftFront.setPower(0);
+            leftBack.setPower(0
+            );
+        }
+
+
+
+        /*if (gamepad1.left_bumper == true)
         {
             slowMode = 1;
         }
@@ -258,10 +287,7 @@ public class mecanumDrive extends OpMode {
 
         }*/
 
-        double degrees = driveAngle(sideWays, forwardBackward);
 
-        // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-        motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
 
             // this sets the power of the swing motor to the value of the right joystick on controller 2
 
@@ -289,18 +315,17 @@ public class mecanumDrive extends OpMode {
             // When the right trigger is slightly pressed the claw will close up
         if (gamepad2.right_bumper == true)
         {
-
-            claw.setPosition(.4);
+            claw.setPosition(.5);
         }
-        // When the left trigger is slightly pressed the claw will go out
-        else if (gamepad2.left_bumper == true)
+            // When the left trigger is slightly pressed the claw will go out
+        if (gamepad2.left_bumper == true) ;
         {
-            claw.setPosition(1);
+            claw.setPosition(0);
         }
+
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "degrees (%.2f)", degrees);
         //telemetry.addData("Motors", "slowmode: (%.d)", slowMode);
         //telemetry.addData("Encoders", "leftFront: (%.d), rightFront: (%.d), leftBack: (%.d), rightBack: (%.d)", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
     }
