@@ -32,9 +32,11 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -50,7 +52,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tank", group="Iterative Opmode")
+@TeleOp(name="tank", group="Iterative Opmode")
 
 public class Tank extends OpMode {
     // Declare OpMode members.
@@ -67,7 +69,7 @@ public class Tank extends OpMode {
     private DcMotor clawLift = null;
 
     // This code is to set the Servos to a variable
-     private Servo claw;  //For the claw*/
+    private Servo claw;  //For the claw*/
     private Servo foundationOne;
     private Servo foundationTwo;
 
@@ -92,7 +94,7 @@ public class Tank extends OpMode {
         clawLift = hardwareMap.get(DcMotor.class, "claw_Lift");
 
 
-        claw = hardwareMap.get(Servo.class, "Claw");
+        claw = hardwareMap.get(Servo.class, "Claw"); // comments please - arthur
         foundationOne = hardwareMap.get(Servo.class, "foundation_One");
         foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
@@ -106,16 +108,16 @@ public class Tank extends OpMode {
         pulley.setDirection (DcMotor.Direction.FORWARD);
         clawLift.setDirection(DcMotor.Direction.FORWARD);
 
-        claw.setPosition(0);
-        foundationOne.setPosition(0);
-        foundationTwo.setPosition(0);
-
         //This is to set the motor to reset the encoders in the motor
         pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        claw.setPosition(0);
+        foundationOne.setPosition(0);
+        foundationTwo.setPosition(1);
 
         // This is to state to use the encoder
         pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -174,13 +176,13 @@ public class Tank extends OpMode {
         }
         else if (Math.abs(turnPower) > 0.05 && Math.abs(forwardPower) < 0.05 && Math.abs(sidePower) < 0.05)
         {
-            leftFront.setPower(turnPower);
-            leftBack.setPower(turnPower);
-            rightFront.setPower(-turnPower);
-            rightBack.setPower(-turnPower);
+            leftFront.setPower(-turnPower);
+            leftBack.setPower(-turnPower);
+            rightFront.setPower(turnPower);
+            rightBack.setPower(turnPower);
         }
         else
-            {
+        {
             double leftFrontPower;
             double rightFrontPower;
             double leftBackPower;
@@ -188,7 +190,7 @@ public class Tank extends OpMode {
             double power;
 
             double radians = (angle * (Math.PI / 180)); //This is to the radians out of the degrees to use the equation
-            
+
             if (Math.abs(forwardPower) >= Math.abs(sidePower)) {
                 power = (Math.abs(forwardPower)); // To determine the power it should use
             } else if (Math.abs(forwardPower) <= Math.abs(sidePower)) {
@@ -201,12 +203,8 @@ public class Tank extends OpMode {
             rightFrontPower = (power * Math.cos(radians + (Math.PI / 4)));
             leftBackPower = (power * Math.cos(radians + (Math.PI / 4)));
             rightBackPower = (power * Math.sin(radians + (Math.PI / 4)));
-            
-            leftFrontPower = (leftFrontPower/diviser);
-            rightFrontPower = (rightFrontPower/diviser);
-            leftBackPower = (leftBackPower/diviser);
-            rightBackPower = (rightBackPower/diviser);
-            
+
+
             leftFront.setPower(-leftFrontPower);
             rightFront.setPower(-rightFrontPower);
             leftBack.setPower(-leftBackPower);
@@ -232,51 +230,25 @@ public class Tank extends OpMode {
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double left = gamepad1.left_stick_y;
+        double leftBackForward = gamepad1.left_stick_y;
         double leftSide = gamepad1.left_stick_x;
-        double right = gamepad1.right_stick_y;
         double rightSide = gamepad1.right_stick_x;
+        double rightBackForward = gamepad1.right_stick_y;
+
         double liftMechanism = gamepad2.left_stick_y;
         double pivot = gamepad2.right_stick_x;
 
 
-        leftPower = Range.clip(left, -1.0, 1.0);
-        rightPower = Range.clip(right, -1.0, 1.0);
+        leftPower = Range.clip(leftBackForward, -1.0, 1.0);
+        rightPower = Range.clip(rightBackForward, -1.0, 1.0);
         leftSidePower = Range.clip(leftSide, -1.0, 1.0);
         rightSidePower = Range.clip(rightSide, -1.0, 1.0);
+
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
         clawPower = Range.clip(pivot, -1, 1);
 
-        if (Math.abs(leftPower) >= .05) {
-            leftFront.setPower(leftPower);
-            leftBack.setPower(leftPower);
-        }
-        if (Math.abs(rightPower) >= .05)
-        {
-            rightFront.setPower(rightPower);
-            rightBack.setPower(rightPower);
-        }
-        if (Math.abs(leftSidePower) >= .05)
-        {
-            leftFront.setPower(leftPower);
-            leftBack.setPower(-leftPower);
-        }
-        if(Math.abs(rightSidePower) >= 0.5)
-        {
-            rightFront.setPower(-rightPower);
-            rightBack.setPower(rightPower);
-        }
-        else if(Math.abs(rightPower) <= 0.05 && Math.abs(leftPower) <= 0.05 && Math.abs(rightSidePower) <= 0.05 && Math.abs(leftSidePower) <= 0.05){
-            rightFront.setPower(0);
-            rightBack.setPower(0);
-            leftFront.setPower(0);
-            leftBack.setPower(0
-            );
-        }
-
-
-
-        /*if (gamepad1.left_bumper == true)
+        /*
+        if (gamepad1.left_bumper == true)
         {
             slowMode = 1;
         }
@@ -287,11 +259,39 @@ public class Tank extends OpMode {
 
         }*/
 
+        if (leftPower > .05 || leftPower < -0.5)
+        {
+            leftFront.setPower(leftPower);
+            leftBack.setPower(leftPower);
+        }
+        else if (leftSidePower > 0.05 || leftSidePower < -0.05)
+        {
+            leftFront.setPower(-leftSidePower);
+            leftBack.setPower(leftSidePower);
+        }
+        else
+            {
+                leftFront.setPower(0);
+                leftBack.setPower(0);
+            }
+        if (rightPower > .05 || rightPower < -0.5)
+        {
+            rightFront.setPower(rightPower);
+            rightBack.setPower(rightPower);
+        }
+        else if (rightSidePower > 0.05 || rightSidePower < -0.05)
+        {
+            rightFront.setPower(rightSidePower);
+            rightBack.setPower(-rightSidePower);
+        }
+        else
+        {
+            rightFront.setPower(0);
+            rightBack.setPower(0);
+        }
 
 
-            // this sets the power of the swing motor to the value of the right joystick on controller 2
-
-            // This sets the power of the lift motor to the value of the left joystick on controller 2
+        // This sets the power of the lift motor to the value of the left joystick on controller 2
         pulley.setPower(liftpower);
         if (Math.abs(liftpower) < 0.05)
         {
@@ -299,30 +299,34 @@ public class Tank extends OpMode {
         }
 
         if (gamepad2.a == true) {
-            foundationOne.setPosition(1);
+            foundationOne.setPosition(0);
             foundationTwo.setPosition(1);
         }
         else if (gamepad2.b == true) {
-            foundationOne.setPosition(0);
+            foundationOne.setPosition(1);
             foundationTwo.setPosition(0);
         }
+        if (clawPower >= 0.1) {
+            clawLift.setPower(0.3);
+        }
+        else if(clawPower <= -0.1){
+            clawLift.setPower(-0.3);
+        }
 
-        clawLift.setPower(clawPower);
-
-            // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
+        // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
 
-            // When the right trigger is slightly pressed the claw will close up
+        // When the right trigger is slightly pressed the claw will close up
         if (gamepad2.right_bumper == true)
         {
-            claw.setPosition(.5);
-        }
-            // When the left trigger is slightly pressed the claw will go out
-        if (gamepad2.left_bumper == true) ;
-        {
-            claw.setPosition(0);
-        }
 
+            claw.setPosition(.4);
+        }
+        // When the left trigger is slightly pressed the claw will go out
+        else if (gamepad2.left_bumper == true)
+        {
+            claw.setPosition(1);
+        }
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());

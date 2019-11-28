@@ -50,8 +50,8 @@ public class robotDeclarations
 
     // This is to assign the function of the servo to the variable
     public Servo claw; // claw servo
-    private Servo foundationOne;
-    private Servo foundationTwo;
+    public Servo foundationOne;
+    public Servo foundationTwo;
 
     // This is to assign the function of the color sensor to the the variable
 
@@ -84,10 +84,10 @@ public class robotDeclarations
 
 
         // Changes the direction of the motor if the motor is reversed
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
         pulley.setDirection(DcMotor.Direction.FORWARD);
         clawLift.setDirection(DcMotor.Direction.FORWARD);
 

@@ -94,7 +94,7 @@ public class mecanumDrive extends OpMode {
         clawLift = hardwareMap.get(DcMotor.class, "claw_Lift");
 
 
-        claw = hardwareMap.get(Servo.class, "Claw");
+        claw = hardwareMap.get(Servo.class, "Claw"); // comments please - arthur
         foundationOne = hardwareMap.get(Servo.class, "foundation_One");
         foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
@@ -117,7 +117,7 @@ public class mecanumDrive extends OpMode {
 
         claw.setPosition(0);
         foundationOne.setPosition(0);
-        foundationTwo.setPosition(0);
+        foundationTwo.setPosition(1);
 
         // This is to state to use the encoder
         pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -154,7 +154,7 @@ public class mecanumDrive extends OpMode {
         return degree;
     }
     //This function converts the degrees into the power needed for the motors
-    public void motorPower(double angle, double forwardPower, double sidePower, double turnPower, double diviser)
+    public void motorPower(double angle, double forwardPower, double sidePower, double turnPower)
     {
         if(Math.abs(forwardPower) > 0.05 && Math.abs(turnPower) > 0.05 && Math.abs(sidePower) < 0.05)
         {
@@ -176,10 +176,10 @@ public class mecanumDrive extends OpMode {
         }
         else if (Math.abs(turnPower) > 0.05 && Math.abs(forwardPower) < 0.05 && Math.abs(sidePower) < 0.05)
         {
-            leftFront.setPower(turnPower);
-            leftBack.setPower(turnPower);
-            rightFront.setPower(-turnPower);
-            rightBack.setPower(-turnPower);
+            leftFront.setPower(-turnPower);
+            leftBack.setPower(-turnPower);
+            rightFront.setPower(turnPower);
+            rightBack.setPower(turnPower);
         }
         else
             {
@@ -203,11 +203,7 @@ public class mecanumDrive extends OpMode {
             rightFrontPower = (power * Math.cos(radians + (Math.PI / 4)));
             leftBackPower = (power * Math.cos(radians + (Math.PI / 4)));
             rightBackPower = (power * Math.sin(radians + (Math.PI / 4)));
-            
-            leftFrontPower = (leftFrontPower/diviser);
-            rightFrontPower = (rightFrontPower/diviser);
-            leftBackPower = (leftBackPower/diviser);
-            rightBackPower = (rightBackPower/diviser);
+
             
             leftFront.setPower(-leftFrontPower);
             rightFront.setPower(-rightFrontPower);
@@ -261,7 +257,7 @@ public class mecanumDrive extends OpMode {
         double degrees = driveAngle(sideWays, forwardBackward);
 
         // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-        motorPower(degrees, forwardPower, sidePower, turnPower, slowMode);
+        motorPower(degrees, forwardPower, sidePower, turnPower);
 
             // this sets the power of the swing motor to the value of the right joystick on controller 2
 
@@ -273,15 +269,19 @@ public class mecanumDrive extends OpMode {
         }
 
         if (gamepad2.a == true) {
-            foundationOne.setPosition(1);
+            foundationOne.setPosition(0);
             foundationTwo.setPosition(1);
         }
         else if (gamepad2.b == true) {
-            foundationOne.setPosition(0);
+            foundationOne.setPosition(1);
             foundationTwo.setPosition(0);
         }
-
-        clawLift.setPower(clawPower);
+        if (clawPower >= 0.1) {
+            clawLift.setPower(0.3);
+        }
+        else if(clawPower <= -0.1){
+            clawLift.setPower(-0.3);
+        }
 
             // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
@@ -298,9 +298,18 @@ public class mecanumDrive extends OpMode {
             claw.setPosition(1);
         }
 
+        if (gamepad1.dpad_left == true)
+        {
+            leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "degrees (%.2f)", degrees);
+        telemetry.addData("Path2",  "Running at %7d :%7d",
+                leftFront.getCurrentPosition(),
+                rightFront.getCurrentPosition());
+        telemetry.update();
         //telemetry.addData("Motors", "slowmode: (%.d)", slowMode);
         //telemetry.addData("Encoders", "leftFront: (%.d), rightFront: (%.d), leftBack: (%.d), rightBack: (%.d)", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
     }
