@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -50,21 +49,22 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="kent", group="Iterative Opmode")
+@TeleOp(name="ServoTest", group="Iterative Opmode")
 
-public class kent extends OpMode {
+public class ServoTest extends OpMode {
     // Declare OpMode members.
-    public final static double heightOfLift = 11; // This variable is a static variable that holds the height of the lift in inches
+    //public final static double heightOfLift = 11; // This variable is a static variable that holds the height of the lift in inches
 
     private ElapsedTime runtime = new ElapsedTime();
 
     // This code is to set the DcMotors to a variable
-    private DcMotor leftBack = null; // The left back motor
-    private DcMotor rightBack = null; // The right back motor
-    private DcMotor leftFront = null; // The left front motor
-    private DcMotor rightFront = null; // the right front motor
 
     // This code is to set the Servos to a variable
+     private Servo claw;  //For the claw*/
+    //private Servo foundationOne;
+    //private Servo foundationTwo;
+
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -75,19 +75,14 @@ public class kent extends OpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        leftBack  = hardwareMap.get(DcMotor.class, "left_Back"); // Green, Violet
-        rightBack = hardwareMap.get(DcMotor.class, "right_Back"); // Green, Blue
-        leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
-        rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
+
+        claw = hardwareMap.get(Servo.class, "Claw");
+        //foundationOne = hardwareMap.get(Servo.class, "foundation_One");
+        //foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -110,12 +105,14 @@ public class kent extends OpMode {
 
     //This function converts the points from the joysticks to degrees
 
-
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
+        double forwardPower;
+        double sidePower;
+        double turnPower;
+        double liftpower;
+
 
 
         // Choose to drive using either Tank Mode, or POV Mode
@@ -124,39 +121,56 @@ public class kent extends OpMode {
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
         double forwardBackward = gamepad1.left_stick_y;
-        double sideWays = gamepad1.right_stick_y;
+        double sideWays = gamepad1.left_stick_x;
+        double turn = gamepad1.right_stick_x;
+        double liftMechanism = gamepad2.left_stick_y;
 
 
 
-        leftPower = Range.clip(forwardBackward, -1.0, 1.0);
-        rightPower = Range.clip(sideWays, -1.0, 1.0);
+        forwardPower = Range.clip(forwardBackward, -1.0, 1.0);
+        sidePower = Range.clip(sideWays, -1.0, 1.0);
+        turnPower = Range.clip(turn, -1.0, 1.0);
+        liftpower = Range.clip(liftMechanism, -1.0, 1.0);
 
-        if (leftPower > 0.1 || leftPower < -0.1)
+        /*if (gamepad1.left_bumper == true)
         {
-            leftFront.setPower(leftPower);
-            leftBack.setPower(leftPower);
+            slowMode = 1;
         }
-        else
+
+        if (gamepad1.right_bumper == true)
         {
-            leftFront.setPower(0);
-            leftBack.setPower(0);
-        }
-        if (rightPower > 0.1 || rightPower < -0.1){
-            rightFront.setPower(rightPower);
-            rightBack.setPower(rightPower);
-        }
-        else
-        {
-            rightFront.setPower(0);
-            rightBack.setPower(0);
-        }
+            slowMode = 2;
+
+        }*/
 
 
-
-
-        // this sets the power of the swing motor to the value of the right joystick on controller 2
+            // this sets the power of the swing motor to the value of the right joystick on controller 2
 
             // This sets the power of the lift motor to the value of the left joystick on controller 2
+
+
+            /*if (gamepad2.a == true) {
+                foundationOne.setPosition(0.5);
+                foundationTwo.setPosition(0.5);
+            } else if (gamepad2.b == true) {
+                foundationOne.setPosition(0);
+                foundationTwo.setPosition(0);
+            }*/
+
+            // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
+
+
+            // When the right trigger is slightly pressed the claw will close up
+        if (gamepad2.right_bumper == true)
+        {
+
+            claw.setPosition(.4);
+        }
+            // When the left trigger is slightly pressed the claw will go out
+        else if (gamepad2.left_bumper == true)
+        {
+            claw.setPosition(1);
+        }
 
 
         // Show the elapsed game time and wheel power.

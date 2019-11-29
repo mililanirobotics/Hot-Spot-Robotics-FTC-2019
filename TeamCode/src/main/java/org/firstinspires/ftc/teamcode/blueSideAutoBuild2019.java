@@ -41,6 +41,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -82,21 +83,13 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
 
     final static double CIRCUMFRENCE         = Math.PI * DIAMETER; // calculates the circumference of the wheels in inches
     final static double GEARREDUCTION        = 1; // If we were to have gears the gear reduction would go up or down depending
-    final static int TICKSPERROTATION        = 1680; // there is 1680 ticks per a revolution of a motor
+    final static int TICKSPERROTATION        = 560; // there is 1680 ticks per a revolution of a motor
     public final static double ROBOTRADIOUS  = 7.5; // the radious of the robot is 7.5 inches
     public final static double TILELENGTH    = 24; // the length of a tile is 24 inches or 2 feet
-
-    private static final String TFOD_MODEL_ASSET = "Skystone.tflite"; // This is to define a variable of the model assets
-    private static final String LABEL_FIRST_ELEMENT = "Stone"; // This defines a variable for a stone for tensorflow
-    private static final String LABEL_SECOND_ELEMENT = "Skystone"; // This defines a variable to a skystone for tensorflow
+    public final static double TICKSPERANINCHSTRAFING = 37;
 
 
     // This is needed for the vuforia licence that we use for image detection
-    private static final String VUFORIA_KEY = "ARqoPXv/////AAABmZ9oE4NYn0cXsd928uU8EgMXcL9ps686/WyyudSMh8i+yq2a2P0udLUULuHoFvf2Ibcar1hHvdKyQDij94K3L36FbSp072xjzhvMAwGrbjBJd/1qAEVhaaJoeYl2ofDROH/LCMPwWg39fthIvMjAiv9JiFE+h/D9V0ocepY1I/8eGQH3dtq43QlLMlNWoz/zrP7wHQvIeB0XIYtjsWtz/ruz/542uajyWmd515SMl2Xpd5klGgjaQbbY7KJ8BotR7q45Jy1QTOvFjQ4UFFrb9+keNG3KEjCHGmn+95q+GEj14ThvysgFd9yVFvCTZmsHo1/d62/xkVlls6dLyleJCwImIKMHwcUp+l5NH2xxAFAR";
-
-    private VuforiaLocalizer vuforia; // creates a variable to import the VuforiaLocalizer into a word more usable
-
-    private TFObjectDetector tfod; // creates a variable to import the TFObjectDetector into a word more usable
 
 
     //determins the amount of ticks per an inch
@@ -114,43 +107,10 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
 
         robot.init(hardwareMap);
 
-        // Init the vuforia
-        initVuforia();
-
-
-        // This is to check if the phone can use TensorFlow for the image recognition if it can't then the error pops up saying device is not compatible
-        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-            initTfod();
-        } else {
-            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-        }
-
-        if (tfod != null) {
-            tfod.activate();
-        }
-
-
-
-
 
             // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
-
-        // Resets the encoders back to 0 for the ticks that it has calulated
-        robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-
-        //Sets the motors to run using the encoders
-        robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
@@ -161,16 +121,36 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
 
         // This is getting the amount of inches the wheel has to turn to reach 90 degrees
         double inchesMoved = degreesToInches(90);
+        robot.foundationOne.setPosition(0);
+        robot.foundationTwo.setPosition(1);
 
 
 
         //calls upon the encoderDrive function which converts the amount of inches into ticks that the encoder should be set to and sets the power to move the robot
         //In this code the time out is meant to be a fail safe incase somthing goes wrong the code will timeout so it does not just keep going
-        encoderDrive(1,  inchesMoved,  -inchesMoved, 5.0);
-        encoderDrive(1, (TILELENGTH / 2) , (TILELENGTH / 2), 5.0);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+
+        strafedrive(1, -20 * TICKSPERANINCHSTRAFING, 3);
+        encoderDrive(.5, 28, 28, 3);
+        robot.foundationOne.setPosition(1);
+        robot.foundationTwo.setPosition(0);
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        }
+        catch (InterruptedException e){
+
+        }
+        encoderDrive(.3, -40, -40, 8);
+        robot.foundationOne.setPosition(0);
+        robot.foundationTwo.setPosition(1);
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        }
+        catch (InterruptedException e){
+
+        }
 
 
 
@@ -191,14 +171,84 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
      *  3) Driver stops the opmode running.
      */
 
+    public void strafedrive(double speed,
+                             double amountOfInches,
+                             double timeoutS) {
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            robot.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            robot.leftFront.setTargetPosition((int)(-amountOfInches));
+            robot.rightFront.setTargetPosition((int)(amountOfInches));
+            robot.leftBack.setTargetPosition((int)(amountOfInches));
+            robot.rightBack.setTargetPosition((int)(-amountOfInches));
+
+            // Turn On RUN_TO_POSITION
+            robot.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
+
+                if(amountOfInches < 0)
+                {
+                    robot.leftBack.setPower(-speed);
+                    robot.leftFront.setPower(speed);
+                    robot.rightBack.setPower(speed);
+                    robot.rightFront.setPower(-speed);
+                }
+                else if(amountOfInches > 0)
+                {
+                    robot.leftBack.setPower(speed);
+                    robot.leftFront.setPower(-speed);
+                    robot.rightBack.setPower(-speed);
+                    robot.rightFront.setPower(speed);
+                }
+                // Display it for the driver.
+                telemetry.addData("Strafe",  "Running at %7d :%7d",
+                        robot.leftFront.getCurrentPosition(),
+                        robot.rightFront.getCurrentPosition());
+                telemetry.update();
+            }
+
+            // Stop all motion;
+            robot.leftBack.setPower(0);
+            robot.rightBack.setPower(0);
+            robot.leftFront.setPower(0);
+            robot.rightFront.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
+        }
+    }
 
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
-        int newLeftFrontTarget;
-        int newRightFrontTarget;
-        int newLeftBackTarget;
-        int newRightBackTarget;
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -234,23 +284,17 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
                    (runtime.seconds() < timeoutS) &&
                    (robot.leftBack.isBusy() && robot.rightBack.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy())) {
 
-                if(leftInches < 0)
+                if(leftInches < 0 && rightInches < 0)
                 {
                     robot.leftBack.setPower(-speed);
                     robot.leftFront.setPower(-speed);
-                }
-                else if(rightInches < 0)
-                {
                     robot.rightBack.setPower(-speed);
                     robot.rightFront.setPower(-speed);
                 }
-                else if(leftInches > 0)
+                else if(leftInches > 0 && rightInches > 0)
                 {
                     robot.leftBack.setPower(speed);
                     robot.leftFront.setPower(speed);
-                }
-                else if(rightInches > 0)
-                {
                     robot.rightBack.setPower(speed);
                     robot.rightFront.setPower(speed);
                 }
@@ -282,26 +326,5 @@ public class blueSideAutoBuild2019 extends LinearOpMode {
         double inchesMove = (radians * ROBOTRADIOUS);
         return(inchesMove);
     }
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CameraDirection.BACK;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-    }
-    private void initTfod()
-    {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minimumConfidence = 0.8;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
-    }
 }
