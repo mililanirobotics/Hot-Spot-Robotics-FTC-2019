@@ -52,9 +52,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="mecanumDrive", group="Iterative Opmode")
+@TeleOp(name="tank", group="Iterative Opmode")
 
-public class mecanumDrive extends OpMode {
+public class Tank extends OpMode {
     // Declare OpMode members.
     public final static double heightOfLift = 11; // This variable is a static variable that holds the height of the lift in inches
 
@@ -154,7 +154,7 @@ public class mecanumDrive extends OpMode {
         return degree;
     }
     //This function converts the degrees into the power needed for the motors
-    public void motorPower(double angle, double forwardPower, double sidePower, double turnPower)
+    public void motorPower(double angle, double forwardPower, double sidePower, double turnPower, double diviser)
     {
         if(Math.abs(forwardPower) > 0.05 && Math.abs(turnPower) > 0.05 && Math.abs(sidePower) < 0.05)
         {
@@ -182,7 +182,7 @@ public class mecanumDrive extends OpMode {
             rightBack.setPower(turnPower);
         }
         else
-            {
+        {
             double leftFrontPower;
             double rightFrontPower;
             double leftBackPower;
@@ -190,7 +190,7 @@ public class mecanumDrive extends OpMode {
             double power;
 
             double radians = (angle * (Math.PI / 180)); //This is to the radians out of the degrees to use the equation
-            
+
             if (Math.abs(forwardPower) >= Math.abs(sidePower)) {
                 power = (Math.abs(forwardPower)); // To determine the power it should use
             } else if (Math.abs(forwardPower) <= Math.abs(sidePower)) {
@@ -204,7 +204,7 @@ public class mecanumDrive extends OpMode {
             leftBackPower = (power * Math.cos(radians + (Math.PI / 4)));
             rightBackPower = (power * Math.sin(radians + (Math.PI / 4)));
 
-            
+
             leftFront.setPower(-leftFrontPower);
             rightFront.setPower(-rightFrontPower);
             leftBack.setPower(-leftBackPower);
@@ -217,9 +217,10 @@ public class mecanumDrive extends OpMode {
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double forwardPower;
-        double sidePower;
-        double turnPower;
+        double leftPower;
+        double rightPower;
+        double rightSidePower;
+        double leftSidePower;
         double liftpower;
         double clawPower;
 
@@ -229,16 +230,20 @@ public class mecanumDrive extends OpMode {
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double forwardBackward = gamepad1.left_stick_y;
-        double sideWays = gamepad1.left_stick_x;
-        double turn = gamepad1.right_stick_x;
+        double leftBackForward = gamepad1.left_stick_y;
+        double leftSide = gamepad1.left_stick_x;
+        double rightSide = gamepad1.right_stick_x;
+        double rightBackForward = gamepad1.right_stick_y;
+
         double liftMechanism = gamepad2.left_stick_y;
         double pivot = gamepad2.right_stick_x;
 
 
-        forwardPower = Range.clip(forwardBackward, -1.0, 1.0);
-        sidePower = Range.clip(sideWays, -1.0, 1.0);
-        turnPower = Range.clip(turn, -1.0, 1.0);
+        leftPower = Range.clip(leftBackForward, -1.0, 1.0);
+        rightPower = Range.clip(rightBackForward, -1.0, 1.0);
+        leftSidePower = Range.clip(leftSide, -1.0, 1.0);
+        rightSidePower = Range.clip(rightSide, -1.0, 1.0);
+
         liftpower = Range.clip(liftMechanism, -1.0, 1.0);
         clawPower = Range.clip(pivot, -1, 1);
 
@@ -254,14 +259,39 @@ public class mecanumDrive extends OpMode {
 
         }*/
 
-        double degrees = driveAngle(sideWays, forwardBackward);
+        if (leftPower > .05 || leftPower < -0.5)
+        {
+            leftFront.setPower(leftPower);
+            leftBack.setPower(leftPower);
+        }
+        else if (leftSidePower > 0.05 || leftSidePower < -0.05)
+        {
+            leftFront.setPower(-leftSidePower);
+            leftBack.setPower(leftSidePower);
+        }
+        else
+            {
+                leftFront.setPower(0);
+                leftBack.setPower(0);
+            }
+        if (rightPower > .05 || rightPower < -0.5)
+        {
+            rightFront.setPower(rightPower);
+            rightBack.setPower(rightPower);
+        }
+        else if (rightSidePower > 0.05 || rightSidePower < -0.05)
+        {
+            rightFront.setPower(rightSidePower);
+            rightBack.setPower(-rightSidePower);
+        }
+        else
+        {
+            rightFront.setPower(0);
+            rightBack.setPower(0);
+        }
 
-        // calls upon the function  motorpower to set the powers of the motor based on the input of your joysticks on your controller 1
-        motorPower(degrees, forwardPower, sidePower, turnPower);
 
-            // this sets the power of the swing motor to the value of the right joystick on controller 2
-
-            // This sets the power of the lift motor to the value of the left joystick on controller 2
+        // This sets the power of the lift motor to the value of the left joystick on controller 2
         pulley.setPower(liftpower);
         if (Math.abs(liftpower) < 0.05)
         {
@@ -283,10 +313,10 @@ public class mecanumDrive extends OpMode {
             clawLift.setPower(-0.3);
         }
 
-            // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
+        // This checks to see if the right bumper is hit. If so then the power is set to 1 for the intake motors
 
 
-            // When the right trigger is slightly pressed the claw will close up
+        // When the right trigger is slightly pressed the claw will close up
         if (gamepad2.right_bumper == true)
         {
 
@@ -298,18 +328,8 @@ public class mecanumDrive extends OpMode {
             claw.setPosition(1);
         }
 
-        if (gamepad1.dpad_left == true)
-        {
-            leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        }
-
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "degrees (%.2f)", degrees);
-        telemetry.addData("Path2",  "Running at %7d :%7d",
-                leftFront.getCurrentPosition(),
-                rightFront.getCurrentPosition());
-        telemetry.update();
         //telemetry.addData("Motors", "slowmode: (%.d)", slowMode);
         //telemetry.addData("Encoders", "leftFront: (%.d), rightFront: (%.d), leftBack: (%.d), rightBack: (%.d)", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
     }
