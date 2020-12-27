@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -44,16 +45,15 @@ public class robotDeclarations
     public DcMotor rightBack = null; // drive Motors
     public DcMotor leftFront = null; // drive Motors
     public DcMotor rightFront = null; // drive Motors
-    public DcMotor intakeOne = null; //intake Motors
-    public DcMotor intakeTwo = null; //intake Motors
     public DcMotor pulley = null; // lift Motor
-    public DcMotor swing = null; // moving Motor
+    private DcMotor clawLift = null;
 
     // This is to assign the function of the servo to the variable
     public Servo claw; // claw servo
+    public Servo foundationOne;
+    public Servo foundationTwo;
 
     // This is to assign the function of the color sensor to the the variable
-    public ColorSensor color_Sensor; // For the foundation detection
 
 
 
@@ -73,18 +73,23 @@ public class robotDeclarations
         rightBack = hardwareMap.get(DcMotor.class, "right_Back"); // Green, Blue
         leftFront  = hardwareMap.get(DcMotor.class, "left_Front"); // Brown, Blue
         rightFront = hardwareMap.get(DcMotor.class, "right_Front"); //Brown, Violet
-        intakeOne = hardwareMap.get(DcMotor.class, "intake_One");
-        intakeTwo = hardwareMap.get(DcMotor.class, "intake_Two");
         pulley = hardwareMap.get (DcMotor.class, "Lift");
+        clawLift = hardwareMap.get(DcMotor.class, "claw_Lift");
+
 
         // Defines and Initialize the Servo
-        swing = hardwareMap.get(DcMotor.class, "swing_Claw");
+        claw = hardwareMap.get(Servo.class, "Claw");
+        foundationOne = hardwareMap.get(Servo.class, "foundation_One");
+        foundationTwo = hardwareMap.get(Servo.class, "foundation_Two");
+
 
         // Changes the direction of the motor if the motor is reversed
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        pulley.setDirection(DcMotor.Direction.FORWARD);
+        clawLift.setDirection(DcMotor.Direction.FORWARD);
 
 
         // Resets the encoder so that the ticks counted is back to 0
@@ -99,17 +104,11 @@ public class robotDeclarations
         rightBack.setPower(0);
         leftFront.setPower(0);
         rightFront.setPower(0);
-        intakeOne.setPower(0);
-        intakeTwo.setPower(0);
         pulley.setPower(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
-        intakeOne.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeTwo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // This inits the color sensor
-        color_Sensor = hardwareMap.colorSensor.get("color");
     }
  }
 
